@@ -1,0 +1,479 @@
+---
+title: "Evidencia 2"
+output: html_notebook
+author: "Ramón Martínez, Elizabeth Díaz, Kevin Aguilera, Diego Reséndiz"
+---
+#Importamos las bibliotecas necesarias
+```{r}
+library(seqinr)
+library(adegenet)
+library(ape)
+library(ggtree)
+library(DECIPHER)
+library(viridis)
+library(ggplot2)
+```
+#Leemos las secuencias de nuestro archivo txt
+```{r}
+secuencias <- readDNAStringSet("secuencias.txt", format = "fasta")
+secuencias
+library(ggplot2)
+```
+#Alineamos nuestras secuencias con la función AlignSeqs
+```{r}
+secuencias_alineadas <- AlignSeqs(secuencias)
+```
+#Abrimos una página externa en el navegador para poder visualizar de mejor forma
+#la alineación de todas nuestras secuencias comparandose entre sí
+```{r}
+BrowseSeqs(secuencias_alineadas, highlight = 0)
+```
+#Generamos un nuevo archivo tipo fasta, donde importamos nuestras secuencias
+#alineadas
+```{r}
+writeXStringSet(secuencias_alineadas, file="Secuencias alineadas.fasta")
+```
+#Creamos una función de distancia, que nos va a devolver si es que hay un
+#parentezco entre las variantes del covid al rededor del mundo,
+#entre más oscuro esté el recuadro, es que hay mayor distancia y por lo tanto, 
+#no hay mucho parecido
+```{r}
+Funcion_distancia<-function(dna_fasta){
+  return(dist.alignment(dna_fasta, matrix = "similarity"))
+}
+dna_fasta <- read.alignment("Secuencias alineadas.fasta", format = "fasta")
+distancia <- Funcion_distancia(dna_fasta)
+```
+#Visualización de la matríz distancia entre los virus
+```{r}
+png(file = "Visualización de la matríz distancia.png")
+temp <- as.data.frame(as.matrix(distancia))
+table.paint(temp, cleg=0, clabel.row=.5, clabel.col=.5)+
+  scale_color_viridis()
+dev.off()
+```
+#Creamos la variable tre, que recibe la matriz distancia, para después
+#crear un objeto y graficar el árbol
+```{r}
+tre <- nj(distancia)
+class(tre)
+```
+#Hacemos plot del árbol 
+```{r}
+png(file = "Plot del árbol filogenético.png")
+tre <- ladderize(tre)
+plot(tre, cex = 0.6)
+title("Árbol filogenético de variantes de Sars Cov-2 en el Mundo")
+dev.off()
+class(tre)
+```
+#Graficamos el árbol usando ggtree
+```{r}
+png(file = "Árbol graficado usando ggtree.png")
+ggtree(tre, yscale = "none")+
+  geom_tiplab(hjust = -0.3, size = 4, align = TRUE)+
+  xlim(0,0.5) 
+dev.off()
+```
+#Visualización de un tramo de las secuncias alineadas 
+```{r}
+library(ggmsa)
+ggmsa(secuencias_alineadas, 240, 320, color = "Chemistry_AA")
+```
+#Creamos el gráfico del árbol con las secuencias alineadas
+```{r}
+tre.new <- tre
+tre.new$tip.label <- secuencias_alineadas@ranges@NAMES
+
+png(file = "Arbol filogenético con secuencias.png")
+msaplot(p=ggtree(tre.new), fasta="Secuencias alineadas.fasta", 
+        window=c(150, 175))+
+  scale_fill_viridis_d(alpha = 0.8)
+dev.off()
+```
+#Imortamos los archivos fasta por separado, para poder obtener la cantidad 
+#de nucleotidos dentro de cada cadena del virus por país
+```{r}
+library(Biostrings)
+library(bios2mds)
+library(stringr)
+library(bios2mds)
+dna_fasta<-import.fasta(
+  file = "Alemania.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Alemania<-paste(dna_fasta[["MW822592.1"]])
+dna_fasta<-import.fasta(
+  file = "Argentina.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Argentina<-paste(dna_fasta[["MW633892.1"]])
+dna_fasta<-import.fasta(
+  file = "Brasil.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Brasil<-paste(dna_fasta[["MW592707.1"]])
+dna_fasta<-import.fasta(
+  file = "Colombia.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Colombia<-paste(dna_fasta[["MT470219.1"]])
+dna_fasta<-import.fasta(
+  file = "Espana.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_España<-paste(dna_fasta[["MW769752.1"]])
+dna_fasta<-import.fasta(
+  file = "Francia.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Francia<-paste(dna_fasta[["MT470160.1"]])
+dna_fasta<-import.fasta(
+  file = "India.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_India<-paste(dna_fasta[["MW927136.1"]])
+dna_fasta<-import.fasta(
+  file = "Indonesia.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Indonesia<-paste(dna_fasta[["MZ026854.1"]])
+dna_fasta<-import.fasta(
+  file = "Iran.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Iran<-paste(dna_fasta[["MW737421.1"]])
+dna_fasta<-import.fasta(
+  file = "Italia.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Italia<-paste(dna_fasta[["MT077125.1"]])
+dna_fasta<-import.fasta(
+  file = "Mexico.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Mexico<-paste(dna_fasta[["MW884219.1"]])
+dna_fasta<-import.fasta(
+  file = "Paises Bajos.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Netherlands<-paste(dna_fasta[["MW577029.1"]])
+dna_fasta<-import.fasta(
+  file = "Peru.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Peru<-paste(dna_fasta[["MW938089.1"]])
+dna_fasta<-import.fasta(
+  file = "Polonia.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Polonia<-paste(dna_fasta[["MT511067.1"]])
+dna_fasta<-import.fasta(
+  file = "Republica Checa.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_RepCheca<-paste(dna_fasta[["MT534285.1"]])
+dna_fasta<-import.fasta(
+  file = "Rusia.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Rusia<-paste(dna_fasta[["MW741552.1"]])
+dna_fasta<-import.fasta(
+  file = "Sudafrica.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Sudafrica<-paste(dna_fasta[["MW981442.1"]])
+dna_fasta<-import.fasta(
+  file = "Turkia.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_Turquia<-paste(dna_fasta[["MW199186.1"]])
+dna_fasta<-import.fasta(
+  file = "USA.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_USA<-paste(dna_fasta[["MZ021680.1"]])
+dna_fasta<-import.fasta(
+  file = "UK.fasta",
+                        aa.to.upper = TRUE, 
+                        gap.to.dash = TRUE)
+dna_UK<-paste(dna_fasta[["OD906774.1"]])
+```
+#Con la función table, sacamos los nucleotidos de cada variante
+```{r}
+table(dna_Alemania)
+table(dna_Argentina)
+table(dna_Brasil)
+table(dna_Colombia)
+table(dna_España)
+table(dna_Francia)
+table(dna_India)
+table(dna_Indonesia)
+table(dna_Iran)
+table(dna_Italia)
+table(dna_Mexico)
+table(dna_Netherlands)
+table(dna_Peru)
+table(dna_Polonia)
+table(dna_RepCheca)
+table(dna_Rusia)
+table(dna_Sudafrica)
+table(dna_Turquia)
+table(dna_UK)
+table(dna_USA)
+```
+#Obtenemos la longitud de cada secuencia con la función length()
+```{r}
+print("Alemania")
+length(dna_Alemania)
+print("Argentina")
+length(dna_Argentina)
+print("Brasil")
+length(dna_Brasil)
+print("Colombia")
+length(dna_Colombia)
+print("España")
+length(dna_España)
+print("Francia")
+length(dna_Francia)
+print("India")
+length(dna_India)
+print("Indonesia")
+length(dna_Indonesia)
+print("Irán")
+length(dna_Iran)
+print("Italia")
+length(dna_Italia)
+print("México")
+length(dna_Mexico)
+print("Paises Bajos")
+length(dna_Netherlands)
+print("Perú")
+length(dna_Peru)
+print("Polonia")
+length(dna_Polonia)
+print("República Checa")
+length(dna_RepCheca)
+print("Rusia")
+length(dna_Rusia)
+print("Sudáfrica")
+length(dna_Sudafrica)
+print("Turquia")
+length(dna_Turquia)
+print("Reino Unido")
+length(dna_UK)
+print("Estados Unidos")
+length(dna_USA)
+```
+#Importamos las bilbiotecas necesarias para poder graficar
+```{r}
+library(reshape2)
+library(dplyr)
+library(randomcoloR)
+library(ggplot2)
+```
+#Creamos unas variables, para que almacenen la cantidad de Adenina, Guanina,
+#Citosina, y Tiamina, para poder graficar la comparación del contenido
+```{r}
+a<-c(8883, 8885, 8923, 8952, 8887, 8954, 8921,8821, 8895, 8894,8947,8910,8912,8953,8892,8955,8929,8947,8891,8893)
+g <- c(5842, 5838, 5856, 5863, 5839,5863, 5860, 5809, 5839, 5848, 5853, 5855, 5854,5862,5854,5859,5846,5859,5845,5851)
+t <- c(9568, 9558, 9598, 9600,9565,9596, 9596, 9501, 9580, 9568, 9602, 9588,9599,9599,9564,9598,9591,9591,9566,9580)
+c <- c(5460, 5473, 5485, 5488,5454,5490,5489,5419, 5502, 5475,5484, 5480,5476,5488,5471,5491,5465,5488,5460,5458)
+M <- c("GER","ARG","BRA","COL","ESP","FRA","IND", 
+       "IDE","IRN", "IT","MEX", "NLD","PE","PL",
+       "CZ","RUS","ZA","TUR", "UK","EUA")
+n<-20
+palette<-distinctColorPalette(n)
+df <- data.frame(Guanina=g,
+                 Citosina=c,
+                 Adenina=a,
+                 Timina=t,
+                 Virus = M)
+head(df)
+dMelt<-melt(df, id="Virus")
+```
+#Generamos el PNG de la primera gráfica comparativa de Timina
+```{r}
+png(file = "Comparación de Timina.png")
+gT<-dMelt%>%dplyr::arrange(-value)%>%head(20)
+p1<-ggplot(data=gT, aes(x=Virus, y=value))
+p1<-p1 + geom_bar(width = 1, stat = "identity", color = "black", fill = palette)
+p1<-p1 + theme(legend.position = "none")
+p1<-p1 + xlab("Variantes del Sars-Cov-2 en el Mundo") + ylab("Timina") 
+p1<-p1 + ggtitle("Comparación de Timina")
+p1
+dev.off()
+```
+#Generamos un nuevo dta frame, que no incluya a la Timina
+```{r}
+df2 <- data.frame(Guanina=g,
+                  Citosina=c,
+                  Adenina=a,
+                  Virus = M)
+head(df2)
+
+dMelt2<-melt(df2, id="Virus")
+
+```
+#Generamos el PNG de la primera gráfica comparativa de Adenina 
+```{r}
+png(file = "Comparación de Adenina.png")
+
+gA<-dMelt2%>%dplyr::arrange(-value)%>%head(20)
+p2<-ggplot(data=gA, aes(x=Virus, y=value))
+p2<-p2 + geom_bar(width = 1, stat = "identity", color = "black", fill = palette)
+p2<-p2 + theme(legend.position = "none")
+p2<-p2 + xlab("Variantes del Sars-Cov-2 en el Mundo") + ylab("Adenina") 
+p2<-p2 + ggtitle("Comparación de Adenina")
+p2
+dev.off()
+```
+#Generamos un nuevo dta frame, que no incluya a la Adenina
+```{r}
+df3 <- data.frame(Guanina=g,
+                  Citosina=c,
+                  Virus = M)
+head(df3)
+
+dMelt3<-melt(df3, id="Virus")
+```
+#Generamos el PNG de la primera gráfica comparativa de Citosina
+```{r}
+png(file = "Comparación de Citosina.png")
+
+gC<-dMelt3%>%dplyr::arrange(-value)%>%head(20)
+p3<-ggplot(data=gC, aes(x=Virus, y=value))
+p3<-p3 + geom_bar(width = 1, stat = "identity", color = "black", fill = palette)
+p3<-p3 + theme(legend.position = "none")
+p3<-p3 + xlab("Variantes del Sars-Cov-2 en el Mundo") + ylab("Citosina") 
+p3<-p3 + ggtitle("Comparación de Citosina")
+p3
+dev.off()
+```
+#Generamos un nuevo dta frame, que solo incluya a la Guanina
+```{r}
+df4 <- data.frame(Guanina=g,
+                  Virus = M)
+head(df4)
+
+dMelt4<-melt(df4, id="Virus")
+```
+#Generamos el PNG de la primera gráfica comparativa de Guanina
+```{r}
+png(file = "Comparación de Guanina.png")
+
+gG<-dMelt4%>%dplyr::arrange(-value)%>%head(20)
+p4<-ggplot(data=gC, aes(x=Virus, y=value))
+p4<-p4 + geom_bar(width = 1, stat = "identity", color = "black", fill = palette)
+p4<-p4 + theme(legend.position = "none")
+p4<-p4 + xlab("Variantes del Sars-Cov-2 en el Mundo") + ylab("Guanina") 
+p4<-p4 + ggtitle("Comparación de Guanina")
+p4
+dev.off()
+```
+#Generamos 4 gráficos en forma de pastel, donde comparamos lo anteriormente
+#mencionado
+```{r}
+png(file = "Comparación de Timina gráfica de pastel.png")
+gTwithMyLabels<-gT%>%
+  dplyr::mutate(id = LETTERS[row_number()])
+
+b<-ggplot(data=gTwithMyLabels, aes(x='', y = value, fill = paste0(id,' : ', 
+  Virus, ' ( ', round(value/sum(value)*100), "%", ' ) ')))
+b<-b + geom_bar(width = 1, stat = "identity", color = "black")
+b<-b + geom_text(aes(x = 1.4, label = id), 
+                 position = position_stack(vjust = 0.5))
+b<-b + theme_void()
+b<-b + theme_classic()
+b<-b + theme(legend.position = "top")
+b<-b + coord_polar("y", start = 0)
+b<-b + scale_fill_manual(values = palette)
+b<-b + theme(axis.line =element_blank())
+b<-b + theme(axis.text =element_blank())
+b<-b + theme(axis.ticks =element_blank())
+b<-b + labs(x = NULL, y = NULL, fill = NULL)
+b<-b + labs(title = "Gráfico en forma de pastel del contenido 
+de Timina en las variantes  del Sars-Cov-2 en el Mundo")
+b<-b + labs(subtitle = "Elaborado por:
+Ramón Martínez, Elizabeth Díaz, Diego Reséndiz y Kevin Aguilera")
+b
+dev.off()
+
+png(file = "Comparación de Adenina gráfica de pastel.png")
+gAwithMyLabels<-gA%>%
+  dplyr::mutate(id = LETTERS[row_number()])
+
+
+c<-ggplot(data=gAwithMyLabels, aes(x='', y = value, fill = paste0(id,' : ', 
+                                                                  Virus, ' ( ', round(value/sum(value)*100), "%", ' ) ')))
+c<-c + geom_bar(width = 1, stat = "identity",color = "black")
+c<-c + geom_text(aes(x = 1.4, label = id), 
+                 position = position_stack(vjust = 0.5))
+c<-c + theme_void()
+c<-c + theme_classic()
+c<-c + theme(legend.position = "top")
+c<-c + coord_polar("y", start = 0)
+c<-c + scale_fill_manual(values = palette)
+c<-c + theme(axis.line =element_blank())
+c<-c + theme(axis.text =element_blank())
+c<-c + theme(axis.ticks =element_blank())
+c<-c + labs(x = NULL, y = NULL, fill = NULL)
+c<-c + labs(title = "Gráfico en forma de pastel del contenido 
+de Adenina en las variantes  del Sars-Cov-2 en el Mundo")
+c<-c + labs(subtitle = "Elaborado por:
+Ramón Martínez, Elizabeth Díaz, Diego Reséndiz y Kevin Aguilera")
+c
+dev.off()
+
+png(file = "Comparación de Citosina gráfica de pastel.png")
+gCwithMyLabels<-gC%>%
+  dplyr::mutate(id = LETTERS[row_number()])
+
+
+d<-ggplot(data=gCwithMyLabels, aes(x='', y = value, fill = paste0(id,' : ', 
+                                                                  Virus, ' ( ', round(value/sum(value)*100), "%", ' ) ')))
+d<-d + geom_bar(width = 1, stat = "identity",color = "black")
+d<-d + geom_text(aes(x = 1.4, label = id), 
+                 position = position_stack(vjust = 0.5))
+d<-d + theme_void()
+d<-d + theme_classic()
+d<-d + theme(legend.position = "top")
+d<-d + coord_polar("y", start = 0)
+d<-d + scale_fill_manual(values = palette)
+d<-d + theme(axis.line =element_blank())
+d<-d + theme(axis.text =element_blank())
+d<-d + theme(axis.ticks =element_blank())
+d<-d + labs(x = NULL, y = NULL, fill = NULL)
+d<-d + labs(title = "Gráfico en forma de pastel del contenido 
+de Citosina en las variantes  del Sars-Cov-2 en el Mundo")
+d<-d + labs(subtitle = "Elaborado por:
+Ramón Martínez, Elizabeth Díaz, Diego Reséndiz y Kevin Aguilera")
+d
+dev.off()
+
+png(file = "Comparación de Guanina gráfica de pastel.png")
+gGwithMyLabels<-gG%>%
+  dplyr::mutate(id = LETTERS[row_number()])
+
+
+e<-ggplot(data=gGwithMyLabels, aes(x='', y = value, fill = paste0(id,' : ', 
+                                                                  Virus, ' ( ', round(value/sum(value)*100), "%", ' ) ')))
+e<-e + geom_bar(width = 1, stat = "identity",color = "black")
+e<-e + geom_text(aes(x = 1.4, label = id), 
+                 position = position_stack(vjust = 0.5))
+e<-e + theme_void()
+e<-e + theme_classic()
+e<-e + theme(legend.position = "top")
+e<-e + coord_polar("y", start = 0)
+e<-e + scale_fill_manual(values = palette)
+e<-e + theme(axis.line =element_blank())
+e<-e + theme(axis.text =element_blank())
+e<-e + theme(axis.ticks =element_blank())
+e<-e + labs(x = NULL, y = NULL, fill = NULL)
+e<-e + labs(title = "Gráfico en forma de pastel del contenido 
+de Guanina en las variantes  del Sars-Cov-2 en el Mundo")
+e<-e + labs(subtitle = "Elaborado por:
+Ramón Martínez, Elizabeth Díaz, Diego Reséndiz y Kevin Aguilera")
+e
+dev.off()
+```
